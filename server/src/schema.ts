@@ -41,6 +41,13 @@ const Query = objectType({
       },
     })
 
+    t.list.field('users', {
+      type: 'User',
+      resolve:(parent, args, ctx: Context) => {
+        return ctx.prisma.user.findMany()
+      }
+    })
+
     t.nullable.field('postById', {
       type: 'Post',
       args: {
@@ -118,7 +125,7 @@ const Mutation = objectType({
     t.field('signup', {
       type: 'AuthPayload',
       args: {
-        name: stringArg(),
+        username: nonNull(stringArg()),
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
@@ -126,7 +133,7 @@ const Mutation = objectType({
         const hashedPassword = await hash(args.password, 10)
         const user = await context.prisma.user.create({
           data: {
-            name: args.name,
+            username: args.username,
             email: args.email,
             password: hashedPassword,
           },
@@ -141,21 +148,21 @@ const Mutation = objectType({
     t.field('login', {
       type: 'AuthPayload',
       args: {
-        email: nonNull(stringArg()),
+        username: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
-      resolve: async (_parent, { email, password }, context: Context) => {
+      resolve: async (_parent, { username, password }, context: Context) => {
         const user = await context.prisma.user.findUnique({
           where: {
-            email,
+            username,
           },
         })
         if (!user) {
-          throw new Error(`No user found for email: ${email}`)
+          throw new Error(`Cannot find ${username}`)
         }
         const passwordValid = await compare(password, user.password)
         if (!passwordValid) {
-          throw new Error('Invalid password')
+          throw new Error('Password is incorrect')
         }
         return {
           token: sign({ userId: user.id }, APP_SECRET),
@@ -245,7 +252,7 @@ const User = objectType({
   name: 'User',
   definition(t) {
     t.nonNull.int('id')
-    t.string('name')
+    t.string('username')
     t.nonNull.string('email')
     t.nonNull.list.nonNull.field('posts', {
       type: 'Post',
@@ -308,6 +315,7 @@ const PostCreateInput = inputObjectType({
   definition(t) {
     t.nonNull.string('title')
     t.string('content')
+    t.string('postImage')
   },
 })
 
@@ -315,7 +323,7 @@ const UserCreateInput = inputObjectType({
   name: 'UserCreateInput',
   definition(t) {
     t.nonNull.string('email')
-    t.string('name')
+    t.string('username')
     t.list.nonNull.field('posts', { type: 'PostCreateInput' })
   },
 })
