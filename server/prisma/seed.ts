@@ -11,11 +11,22 @@ const userData: Prisma.UserCreateInput[] = [
       create: [
         {
           title: 'What is Life #4',
-          content: 'Who knows lol',
+          description: 'Who knows lol',
           published: true,
+          postImage: "./seedImage.webp"
         },
       ],
     },
+    Profile: {
+      create: {
+        profileBG: "./seedImage.webp",
+        hiring: false,
+        website: "http://example.com",
+        location: "Los Angeles, CA",
+        aboutMe: "Part time superhero",
+        profilePhoto: "./seedImage.webp",
+      }
+    }
   },
   {
     username: 'nikka_32',
@@ -25,12 +36,23 @@ const userData: Prisma.UserCreateInput[] = [
       create: [
         {
           title: 'HomeTown',
-          content: 'Gol',
+          description: 'Uh AHAHA',
           published: true,
+          postImage: "./seedImage.webp",
           viewCount: 42,
         },
       ],
     },
+    Profile: {
+      create: {
+        profileBG: "./seedImage.webp",
+        hiring: true,
+        website: "http://example.com",
+        location: "Toronto, CA",
+        aboutMe: "iDesign",
+        profilePhoto: "./seedImage.webp",
+      }
+    }
   },
   {
     username: 'kitosis',
@@ -40,16 +62,28 @@ const userData: Prisma.UserCreateInput[] = [
       create: [
         {
           title: 'Like That',
-          content: 'piranas',
+          description: 'piranas',
+          postImage: "./seedImage.webp",
           published: true,
           viewCount: 128,
         },
         {
           title: 'Appe Escap',
-          content: 'words',
+          description: 'words',
+          postImage: "./seedImage.webp"
         },
       ],
     },
+    Profile: {
+      create: {
+        profileBG: "./seedImage.webp",
+        hiring: true,
+        website: "http://example.com",
+        location: "Toronto, CA",
+        aboutMe: "iDesign",
+        profilePhoto: "./seedImage.webp",
+      }
+    }
   },
 ]
 

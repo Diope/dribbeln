@@ -185,7 +185,8 @@ const Mutation = objectType({
         return context.prisma.post.create({
           data: {
             title: args.data.title,
-            content: args.data.content,
+            description: args.data.description,
+            postImage: args.data.postImage,
             authorId: userId,
           },
         })
@@ -267,6 +268,29 @@ const User = objectType({
   },
 })
 
+const Profile = objectType({
+  name: 'Profile',
+  definition(t) {
+    t.nonNull.int('id')
+    t.nonNull.field('createdAt', {type: 'DateTime'})
+    t.nonNull.field('updatedAt', {type: 'DateTime'})
+    t.string("profilePhoto")
+    t.string("profileBG")
+    t.string("website")
+    t.boolean("hiring")
+    t.string("location")
+    t.string("aboutMe")
+    t.field('User', {
+      type: 'User',
+      resolve: (parent, _, context: Context) => {
+        return context.prisma.profile.findUnique({
+          where: {id: parent.id || undefined },
+        }).User()
+      }
+    })
+  }
+})
+
 const Post = objectType({
   name: 'Post',
   definition(t) {
@@ -274,7 +298,8 @@ const Post = objectType({
     t.nonNull.field('createdAt', { type: 'DateTime' })
     t.nonNull.field('updatedAt', { type: 'DateTime' })
     t.nonNull.string('title')
-    t.string('content')
+    t.nonNull.string('description')
+    t.nonNull.string("postImage")
     t.nonNull.boolean('published')
     t.nonNull.int('viewCount')
     t.field('author', {
@@ -314,16 +339,28 @@ const PostCreateInput = inputObjectType({
   name: 'PostCreateInput',
   definition(t) {
     t.nonNull.string('title')
-    t.string('content')
-    t.string('postImage')
+    t.nonNull.string('description')
+    t.nonNull.string('postImage')
   },
+});
+
+const ProfileCreateInput = inputObjectType({
+  name: "ProfileCreateInput",
+  definition(t) {
+    t.nonNull.string("profilePhoto")
+    t.nonNull.string("profileBG")
+    t.nonNull.string("website")
+    t.nonNull.boolean("hiring")
+    t.nonNull.string("location")
+    t.nonNull.string("aboutMe")
+  }
 })
 
 const UserCreateInput = inputObjectType({
   name: 'UserCreateInput',
   definition(t) {
     t.nonNull.string('email')
-    t.string('username')
+    t.nonNull.string('username')
     t.list.nonNull.field('posts', { type: 'PostCreateInput' })
   },
 })
@@ -341,11 +378,13 @@ const schemaWithoutPermissions = makeSchema({
     Query,
     Mutation,
     Post,
+    Profile,
     User,
     AuthPayload,
     UserUniqueInput,
     UserCreateInput,
     PostCreateInput,
+    ProfileCreateInput,
     SortOrder,
     PostOrderByUpdatedAtInput,
     DateTime,

@@ -23,9 +23,10 @@ type Mutation {
 
 type Post {
   author: User
-  content: String
   createdAt: DateTime!
+  description: String!
   id: Int!
+  postImage: String!
   published: Boolean!
   title: String!
   updatedAt: DateTime!
@@ -33,13 +34,26 @@ type Post {
 }
 
 input PostCreateInput {
-  content: String
-  postImage: String
+  description: String!
+  postImage: String!
   title: String!
 }
 
 input PostOrderByUpdatedAtInput {
   updatedAt: SortOrder!
+}
+
+type Profile {
+  User: User
+  aboutMe: String
+  createdAt: DateTime!
+  hiring: Boolean
+  id: Int!
+  location: String
+  profileBG: String
+  profilePhoto: String
+  updatedAt: DateTime!
+  website: String
 }
 
 type Query {
@@ -66,7 +80,7 @@ type User {
 input UserCreateInput {
   email: String!
   posts: [PostCreateInput!]
-  username: String
+  username: String!
 }
 
 input UserUniqueInput {

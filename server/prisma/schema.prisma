@@ -17,16 +17,16 @@ model User {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String
-  content   String?
-  postImage String? // 
-  published Boolean  @default(false)
-  viewCount Int      @default(0)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  title           String
+  description     String
+  postImage       String // 
+  published       Boolean  @default(false)
+  viewCount       Int      @default(0)
+  author          User?    @relation(fields: [authorId], references: [id])
+  authorId        Int?
 }
 
 model Profile {
@@ -42,3 +42,4 @@ model Profile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
