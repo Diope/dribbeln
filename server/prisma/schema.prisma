@@ -13,7 +13,7 @@ model User {
   password String
   username String   @unique
   posts    Post[]
-  Profile  Profile? 
+  profile  Profile?
 }
 
 model Post {
@@ -35,10 +35,10 @@ model Profile {
   userId          Int?  @unique
   profilePhoto    String?
   profileBG       String?
-  website         String?
+  website         String? @default("https://mysuperamazingsite.com")
   hiring          Boolean @default(false)
-  location        String?
-  aboutMe         String?
+  location        String? @default("Anywhere US")
+  aboutMe         String? @default("A Designer designing")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

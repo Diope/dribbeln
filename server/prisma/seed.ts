@@ -17,15 +17,8 @@ const userData: Prisma.UserCreateInput[] = [
         },
       ],
     },
-    Profile: {
-      create: {
-        profileBG: "./seedImage.webp",
-        hiring: false,
-        website: "http://example.com",
-        location: "Los Angeles, CA",
-        aboutMe: "Part time superhero",
-        profilePhoto: "./seedImage.webp",
-      }
+    profile: {
+      create: {}
     }
   },
   {
@@ -43,15 +36,8 @@ const userData: Prisma.UserCreateInput[] = [
         },
       ],
     },
-    Profile: {
-      create: {
-        profileBG: "./seedImage.webp",
-        hiring: true,
-        website: "http://example.com",
-        location: "Toronto, CA",
-        aboutMe: "iDesign",
-        profilePhoto: "./seedImage.webp",
-      }
+    profile: {
+      create: {}
     }
   },
   {
@@ -74,15 +60,8 @@ const userData: Prisma.UserCreateInput[] = [
         },
       ],
     },
-    Profile: {
-      create: {
-        profileBG: "./seedImage.webp",
-        hiring: true,
-        website: "http://example.com",
-        location: "Toronto, CA",
-        aboutMe: "iDesign",
-        profilePhoto: "./seedImage.webp",
-      }
+    profile: {
+      create: {}
     }
   },
 ]

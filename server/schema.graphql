@@ -14,11 +14,13 @@ scalar DateTime
 
 type Mutation {
   createDraft(data: PostCreateInput!): Post
+  createProfile(aboutMe: String, hiring: Boolean!, location: String, profileBG: String, profilePhoto: String, website: String): Profile
   deletePost(id: Int!): Post
   incrementPostViewCount(id: Int!): Post
   login(password: String!, username: String!): AuthPayload
   signup(email: String!, password: String!, username: String!): AuthPayload
   togglePublishPost(id: Int!): Post
+  updateProfile(aboutMe: String, hiring: Boolean!, id: Int, location: String, profileBG: String, profilePhoto: String, website: String): Profile
 }
 
 type Post {
@@ -47,12 +49,30 @@ type Profile {
   User: User
   aboutMe: String
   createdAt: DateTime!
-  hiring: Boolean
+  hiring: Boolean!
   id: Int!
   location: String
   profileBG: String
   profilePhoto: String
   updatedAt: DateTime!
+  website: String
+}
+
+input ProfileCreateInput {
+  aboutMe: String
+  hiring: Boolean!
+  location: String
+  profileBG: String
+  profilePhoto: String
+  website: String
+}
+
+input ProfileUpdateInput {
+  aboutMe: String
+  hiring: Boolean!
+  location: String
+  profileBG: String
+  profilePhoto: String
   website: String
 }
 
@@ -74,12 +94,14 @@ type User {
   email: String!
   id: Int!
   posts: [Post!]!
+  profile: Profile
   username: String
 }
 
 input UserCreateInput {
   email: String!
   posts: [PostCreateInput!]
+  profile: ProfileCreateInput!
   username: String!
 }
 

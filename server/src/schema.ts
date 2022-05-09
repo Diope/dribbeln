@@ -43,9 +43,9 @@ const Query = objectType({
 
     t.list.field('users', {
       type: 'User',
-      resolve:(parent, args, ctx: Context) => {
+      resolve: (parent, args, ctx: Context) => {
         return ctx.prisma.user.findMany()
-      }
+      },
     })
 
     t.nullable.field('postById', {
@@ -127,16 +127,35 @@ const Mutation = objectType({
       args: {
         username: nonNull(stringArg()),
         email: nonNull(stringArg()),
-        password: nonNull(stringArg()),
+        password: nonNull(stringArg())
       },
       resolve: async (_parent, args, context: Context) => {
+        const _username = await context.prisma.user.findUnique({
+          where: {
+            username: args.username,
+          },
+        })
+        if (_username) {
+          throw new Error(
+            `The username ${args.username} is already in use, please try another.`,
+          )
+        }
+        const _email = await context.prisma.user.findUnique({
+          where: {
+            email: args.email,
+          },
+        })
+        if (_email) {
+          throw new Error(`The email ${args.email} is already in use.`)
+        }
         const hashedPassword = await hash(args.password, 10)
         const user = await context.prisma.user.create({
           data: {
             username: args.username,
             email: args.email,
             password: hashedPassword,
-          },
+            profile: {create: {}}
+          }
         })
         return {
           token: sign({ userId: user.id }, APP_SECRET),
@@ -158,7 +177,7 @@ const Mutation = objectType({
           },
         })
         if (!user) {
-          throw new Error(`Cannot find ${username}`)
+          throw new Error(`Cannot find a user with the username ${username}`)
         }
         const passwordValid = await compare(password, user.password)
         if (!passwordValid) {
@@ -246,6 +265,55 @@ const Mutation = objectType({
         })
       },
     })
+
+    t.field('createProfile', {
+      type: 'Profile',
+      args: {
+        location: stringArg(),
+        profilePhoto: stringArg(),
+        profileBG: stringArg(),
+        website: stringArg(),
+        hiring: nonNull('Boolean'),
+        aboutMe: stringArg(),
+      },
+      resolve: (parent, args, context: Context) => {
+        const userId = getUserId(context)
+        if (!userId) throw new Error('User could not be authenticated')
+        return context.prisma.profile.create({
+          data: {
+            ...args,
+            User: { connect: { id: Number(userId) } },
+          },
+        })
+      },
+    })
+
+    t.field('updateProfile', {
+      type: 'Profile',
+      args: {
+        id: intArg(),
+        location: stringArg(),
+        profilePhoto: stringArg(),
+        profileBG: stringArg(),
+        website: stringArg(),
+        hiring: nonNull('Boolean'),
+        aboutMe: stringArg(),
+      },
+      resolve: (parent, {id, ...args}, context: Context) => {
+        const userId = getUserId(context)
+        if (!userId) throw new Error('User could not be authenticated. Please log in and try again')
+
+        return context.prisma.profile.update({
+          data: {
+            ...args
+          },
+          where: {
+            id: Number(id)
+          }
+        })
+      }
+    })
+
   },
 })
 
@@ -255,6 +323,16 @@ const User = objectType({
     t.nonNull.int('id')
     t.string('username')
     t.nonNull.string('email')
+    t.field('profile', {
+      type: 'Profile',
+      resolve: (parent, _, context: Context) => {
+        return context.prisma.user
+          .findUnique({
+            where: { id: parent.id },
+          })
+          .profile()
+      },
+    })
     t.nonNull.list.nonNull.field('posts', {
       type: 'Post',
       resolve: (parent, _, context: Context) => {
@@ -272,23 +350,25 @@ const Profile = objectType({
   name: 'Profile',
   definition(t) {
     t.nonNull.int('id')
-    t.nonNull.field('createdAt', {type: 'DateTime'})
-    t.nonNull.field('updatedAt', {type: 'DateTime'})
-    t.string("profilePhoto")
-    t.string("profileBG")
-    t.string("website")
-    t.boolean("hiring")
-    t.string("location")
-    t.string("aboutMe")
+    t.nonNull.field('createdAt', { type: 'DateTime' })
+    t.nonNull.field('updatedAt', { type: 'DateTime' })
+    t.string('profilePhoto')
+    t.string('profileBG')
+    t.string('website')
+    t.nonNull.boolean('hiring')
+    t.string('location')
+    t.string('aboutMe')
     t.field('User', {
       type: 'User',
       resolve: (parent, _, context: Context) => {
-        return context.prisma.profile.findUnique({
-          where: {id: parent.id || undefined },
-        }).User()
-      }
+        return context.prisma.profile
+          .findUnique({
+            where: { id: parent.id || undefined },
+          })
+          .User()
+      },
     })
-  }
+  },
 })
 
 const Post = objectType({
@@ -299,7 +379,7 @@ const Post = objectType({
     t.nonNull.field('updatedAt', { type: 'DateTime' })
     t.nonNull.string('title')
     t.nonNull.string('description')
-    t.nonNull.string("postImage")
+    t.nonNull.string('postImage')
     t.nonNull.boolean('published')
     t.nonNull.int('viewCount')
     t.field('author', {
@@ -342,17 +422,29 @@ const PostCreateInput = inputObjectType({
     t.nonNull.string('description')
     t.nonNull.string('postImage')
   },
-});
+})
 
 const ProfileCreateInput = inputObjectType({
-  name: "ProfileCreateInput",
+  name: 'ProfileCreateInput',
   definition(t) {
-    t.nonNull.string("profilePhoto")
-    t.nonNull.string("profileBG")
-    t.nonNull.string("website")
-    t.nonNull.boolean("hiring")
-    t.nonNull.string("location")
-    t.nonNull.string("aboutMe")
+    t.string('profilePhoto')
+    t.string('profileBG')
+    t.string('website')
+    t.nonNull.boolean('hiring')
+    t.string('location')
+    t.string('aboutMe')
+  },
+})
+
+const ProfileUpdateInput = inputObjectType({
+  name: 'ProfileUpdateInput',
+  definition(t) {
+    t.string('profilePhoto')
+    t.string('profileBG')
+    t.string('website')
+    t.nonNull.boolean('hiring')
+    t.string('location')
+    t.string('aboutMe')
   }
 })
 
@@ -362,6 +454,7 @@ const UserCreateInput = inputObjectType({
     t.nonNull.string('email')
     t.nonNull.string('username')
     t.list.nonNull.field('posts', { type: 'PostCreateInput' })
+    t.nonNull.field('profile', {type: 'ProfileCreateInput'})
   },
 })
 
@@ -385,6 +478,7 @@ const schemaWithoutPermissions = makeSchema({
     UserCreateInput,
     PostCreateInput,
     ProfileCreateInput,
+    ProfileUpdateInput,
     SortOrder,
     PostOrderByUpdatedAtInput,
     DateTime,

@@ -1,4 +1,4 @@
-import { rule, shield } from 'graphql-shield'
+import { allow, rule, shield } from 'graphql-shield'
 import { getUserId } from '../utils'
 import { Context } from '../context'
 
@@ -20,16 +20,20 @@ const rules = {
   }),
 }
 
-export const permissions = shield({
-  Query: {
-    me: rules.isAuthenticatedUser,
-    draftsByUser: rules.isAuthenticatedUser,
-    postById: rules.isAuthenticatedUser,
+export const permissions = shield(
+  {
+    Query: {
+      me: rules.isAuthenticatedUser,
+      draftsByUser: rules.isAuthenticatedUser,
+      postById: rules.isAuthenticatedUser,
+    },
+    Mutation: {
+      createDraft: rules.isAuthenticatedUser,
+      deletePost: rules.isPostOwner,
+      incrementPostViewCount: rules.isAuthenticatedUser,
+      togglePublishPost: rules.isPostOwner,
+      login: allow,
+    },
   },
-  Mutation: {
-    createDraft: rules.isAuthenticatedUser,
-    deletePost: rules.isPostOwner,
-    incrementPostViewCount: rules.isAuthenticatedUser,
-    togglePublishPost: rules.isPostOwner,
-  },
-})
+  { debug: true },
+)
